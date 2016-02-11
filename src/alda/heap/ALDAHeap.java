@@ -56,7 +56,7 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
      * @param x the item to insert.
      */
     public void insert(AnyType x) {
-        if(currentSize == array.length - 1) {
+        if(size() == array.length - 1) {
             enlargeArray((array.length * d) + 1);
         }
 
@@ -157,13 +157,13 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
         int tmpChild;
         AnyType tmp = array[hole];
 
-        for(; firstChildIndex(hole) <= currentSize; hole = tmpChild) {
+        for(; firstChildIndex(hole) <= size(); hole = tmpChild) {
             child = firstChildIndex(hole);
             tmpChild = child;
 
             for(int i = 1; i < d; i++) {
-                if((child != currentSize) &&
-                        (child + i < currentSize + 1) &&
+                if((child != size()) &&
+                        (child + i < size() + 1) &&
                         (array[child + i].compareTo(array[tmpChild]) < 0)) {
                     tmpChild = child + i;
                 }
