@@ -15,57 +15,54 @@ package alda.heap;// BinaryHeap class
 /**
  * Implements a binary heap.
  * Note that all "matching" is based on the compareTo method.
+ *
  * @author Mark Allen Weiss
  */
-public class ALDAHeap<AnyType extends Comparable<? super AnyType>>
-{
+
+public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
+
+    private static final int DEFAULT_CAPACITY = 10;
+    private static final int BINARY_HEAP = 2;
+
+    private int d; // Number of children for each node
+    private int currentSize; // Number of elements in heap
+    private AnyType[] array; // The heap array
+
     /**
-     * Construct the binary heap.
+     * Construct the binary heap by sending 2 (binary) to the second constructor.
      */
-    public ALDAHeap( )
-    {
-        this( DEFAULT_CAPACITY );
+    public ALDAHeap() {
+        this(BINARY_HEAP);
     }
 
     /**
      * Construct the binary heap.
-     * @param capacity the capacity of the binary heap.
+     *
+     * @param d the specific amount of children per node in the heap.
      */
-    public ALDAHeap( int capacity )
-    {
+    public ALDAHeap(int d) {
+        if(d < 2) {
+            throw new IllegalArgumentException();
+        }
         currentSize = 0;
-        array = (AnyType[]) new Comparable[ capacity + 1 ];
-    }
-
-    /**
-     * Construct the binary heap given an array of items.
-     */
-    public ALDAHeap( AnyType [ ] items )
-    {
-        currentSize = items.length;
-        array = (AnyType[]) new Comparable[ ( currentSize + 2 ) * 11 / 10 ];
-
-        int i = 1;
-        for( AnyType item : items )
-            array[ i++ ] = item;
-        buildHeap( );
+        this.d = d;
+        array = (AnyType[]) new Comparable[DEFAULT_CAPACITY * d + 1];
     }
 
     /**
      * Insert into the priority queue, maintaining heap order.
      * Duplicates are allowed.
+     *
      * @param x the item to insert.
      */
-    public void insert( AnyType x )
-    {
-        if( currentSize == array.length - 1 )
-            enlargeArray( array.length * 2 + 1 );
+    public void insert(AnyType x) {
+        if(currentSize == array.length - 1) {
+            enlargeArray((array.length * d) + 1);
+        }
 
-        // Percolate up
         int hole = ++currentSize;
-        for( array[ 0 ] = x; x.compareTo( array[ hole / 2 ] ) < 0; hole /= 2 )
-            array[ hole ] = array[ hole / 2 ];
-        array[ hole ] = x;
+        array[hole] = x;
+        bubbleUp(hole);
     }
 
     public int size() {
@@ -73,52 +70,54 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>>
     }
 
     public AnyType get(int index) {
-        // TODO: Implement method
         return array[index];
     }
 
     public int parentIndex(int child) {
-        // TODO: Implement method
-        return 0;
+        if (child < 2) {
+            throw new IllegalArgumentException();
+        }
+        return (child - 2) / d + 1;
     }
 
     public int firstChildIndex(int parent) {
-        // TODO: Implement method
-        return 0;
+        if (parent < 1) {
+            throw new IllegalArgumentException();
+        }
+        return d * (parent - 1) + 2;
     }
 
 
-    private void enlargeArray( int newSize )
-    {
-        AnyType [] old = array;
-        array = (AnyType []) new Comparable[ newSize ];
-        for( int i = 0; i < old.length; i++ )
-            array[ i ] = old[ i ];
+    private void enlargeArray(int newSize) {
+        AnyType[] old = array;
+        array = (AnyType[]) new Comparable[newSize];
+        for (int i = 0; i < old.length; i++)
+            array[i] = old[i];
     }
 
     /**
      * Find the smallest item in the priority queue.
+     *
      * @return the smallest item, or throw an UnderflowException if empty.
      */
-    public AnyType findMin( )
-    {
-        if( isEmpty( ) )
-            throw new UnderflowException( );
-        return array[ 1 ];
+    public AnyType findMin() {
+        if (isEmpty())
+            throw new UnderflowException();
+        return array[1];
     }
 
     /**
      * Remove the smallest item from the priority queue.
+     *
      * @return the smallest item, or throw an UnderflowException if empty.
      */
-    public AnyType deleteMin( )
-    {
-        if( isEmpty( ) )
-            throw new UnderflowException( );
+    public AnyType deleteMin() {
+        if (isEmpty())
+            throw new UnderflowException();
 
-        AnyType minItem = findMin( );
-        array[ 1 ] = array[ currentSize-- ];
-        percolateDown( 1 );
+        AnyType minItem = findMin();
+        array[1] = array[currentSize--];
+        siftDown(1);
 
         return minItem;
     }
@@ -127,68 +126,82 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>>
      * Establish heap order property from an arbitrary
      * arrangement of items. Runs in linear time.
      */
-    private void buildHeap( )
-    {
-        for( int i = currentSize / 2; i > 0; i-- )
-            percolateDown( i );
+    private void buildHeap() {
+        for (int i = currentSize / 2; i > 0; i--)
+            siftDown(i);
     }
 
     /**
      * Test if the priority queue is logically empty.
+     *
      * @return true if empty, false otherwise.
      */
-    public boolean isEmpty( )
-    {
+    public boolean isEmpty() {
         return currentSize == 0;
     }
 
     /**
      * Make the priority queue logically empty.
      */
-    public void makeEmpty( )
-    {
+    public void makeEmpty() {
         currentSize = 0;
     }
 
-    private static final int DEFAULT_CAPACITY = 10;
-
-    private int currentSize;      // Number of elements in heap
-    private AnyType [ ] array; // The heap array
-
     /**
      * Internal method to percolate down in the heap.
+     *
      * @param hole the index at which the percolate begins.
      */
-    private void percolateDown( int hole )
-    {
+    private void siftDown(int hole) {
         int child;
-        AnyType tmp = array[ hole ];
+        int tmpChild;
+        AnyType tmp = array[hole];
 
-        for( ; hole * 2 <= currentSize; hole = child )
-        {
-            child = hole * 2;
-            if( child != currentSize &&
-                    array[ child + 1 ].compareTo( array[ child ] ) < 0 )
-                child++;
-            if( array[ child ].compareTo( tmp ) < 0 )
-                array[ hole ] = array[ child ];
-            else
+        for(; firstChildIndex(hole) <= currentSize; hole = tmpChild) {
+            child = firstChildIndex(hole);
+            tmpChild = child;
+
+            for(int i = 1; i < d; i++) {
+                if((child != currentSize) &&
+                        (child + i < currentSize + 1) &&
+                        (array[child + i].compareTo(array[tmpChild]) < 0)) {
+                    tmpChild = child + i;
+                }
+            }
+            if(array[tmpChild].compareTo(tmp) < 0) {
+                array[hole] = array[tmpChild];
+            } else {
                 break;
+            }
         }
-        array[ hole ] = tmp;
+        array[hole] = tmp;
+    }
+
+    private void bubbleUp(int hole) {
+        AnyType tmp = array[hole];
+
+        while(hole > 1) {
+            int parIndex = parentIndex(hole);
+            AnyType parent = array[parIndex];
+            if(tmp.compareTo(parent) >= 0) {
+                break;
+            }
+            array[parIndex] = tmp;
+            array[hole] = parent;
+            hole = parIndex;
+        }
     }
 
     // Test program
-    public static void main( String [ ] args )
-    {
+    public static void main(String[] args) {
         int numItems = 10000;
-        ALDAHeap<Integer> h = new ALDAHeap<>( );
+        ALDAHeap<Integer> h = new ALDAHeap<>();
         int i = 37;
 
-        for( i = 37; i != 0; i = ( i + 37 ) % numItems )
-            h.insert( i );
-        for( i = 1; i < numItems; i++ )
-            if( h.deleteMin( ) != i )
-                System.out.println( "Oops! " + i );
+        for (i = 37; i != 0; i = (i + 37) % numItems)
+            h.insert(i);
+        for (i = 1; i < numItems; i++)
+            if (h.deleteMin() != i)
+                System.out.println("Oops! " + i);
     }
 }
