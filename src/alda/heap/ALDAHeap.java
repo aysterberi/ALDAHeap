@@ -68,6 +68,25 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>>
         array[ hole ] = x;
     }
 
+    public int size() {
+        return currentSize;
+    }
+
+    public AnyType get(int index) {
+        // TODO: Implement method
+        return array[index];
+    }
+
+    public int parentIndex(int child) {
+        // TODO: Implement method
+        return 0;
+    }
+
+    public int firstChildIndex(int parent) {
+        // TODO: Implement method
+        return 0;
+    }
+
 
     private void enlargeArray( int newSize )
     {
