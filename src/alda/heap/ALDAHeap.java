@@ -1,4 +1,9 @@
-package alda.heap;// BinaryHeap class
+/**
+ * Billy G. J. Beltran(bibe1744) & Joakim Berglund(jobe7147)
+ * Contact details: billy@caudimordax.org, joakimberglund@live.se
+ */
+
+package alda.heap;
 //
 // CONSTRUCTION: with optional capacity (that defaults to 100)
 //               or an array containing initial items
@@ -13,12 +18,11 @@ package alda.heap;// BinaryHeap class
 // Throws UnderflowException as appropriate
 
 /**
- * Implements a binary heap.
- * Note that all "matching" is based on the compareTo method.
- *
- * @author Mark Allen Weiss
+ * Implements a d-ary heap
+ * Index for elements begins at 1, not 0.
+ * Originally based on Mark Allen Weiss' binary heap implementation
+ * Completely rewritten.
  */
-
 public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
 
     private static final int DEFAULT_CAPACITY = 10;
@@ -41,7 +45,7 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
      * @param d the specific amount of children per node in the heap.
      */
     public ALDAHeap(int d) {
-        if(d < 2) {
+        if (d < 2) {
             throw new IllegalArgumentException();
         }
         currentSize = 0;
@@ -56,7 +60,7 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
      * @param x the item to insert.
      */
     public void insert(AnyType x) {
-        if(size() == array.length - 1) {
+        if (size() == array.length - 1) {
             enlargeArray((array.length * d) + 1);
         }
 
@@ -65,11 +69,38 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
         bubbleUp(hole);
     }
 
+    /**
+     * Remove the smallest item from the priority queue.
+     *
+     * @return the smallest item, or throw an UnderflowException if empty.
+     */
+    public AnyType deleteMin() {
+        if (isEmpty())
+            throw new UnderflowException();
+
+        AnyType minItem = findMin();
+        array[1] = array[currentSize--];
+        siftDown(1);
+
+        return minItem;
+    }
+
+    /**
+     * Find the smallest item in the priority queue.
+     *
+     * @return the smallest item, or throw an UnderflowException if empty.
+     */
+    public AnyType findMin() {
+        if (isEmpty())
+            throw new UnderflowException();
+        return array[1];
+    }
+
     public int size() {
         return currentSize;
     }
 
-    public AnyType get(int index) {
+    AnyType get(int index) {
         return array[index];
     }
 
@@ -96,38 +127,11 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
     }
 
     /**
-     * Find the smallest item in the priority queue.
-     *
-     * @return the smallest item, or throw an UnderflowException if empty.
-     */
-    public AnyType findMin() {
-        if (isEmpty())
-            throw new UnderflowException();
-        return array[1];
-    }
-
-    /**
-     * Remove the smallest item from the priority queue.
-     *
-     * @return the smallest item, or throw an UnderflowException if empty.
-     */
-    public AnyType deleteMin() {
-        if (isEmpty())
-            throw new UnderflowException();
-
-        AnyType minItem = findMin();
-        array[1] = array[currentSize--];
-        siftDown(1);
-
-        return minItem;
-    }
-
-    /**
      * Establish heap order property from an arbitrary
      * arrangement of items. Runs in linear time.
      */
     private void buildHeap() {
-        for (int i = currentSize / 2; i > 0; i--)
+        for (int i = currentSize / d; i > 0; i--)
             siftDown(i);
     }
 
@@ -148,27 +152,27 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
     }
 
     /**
-     * Internal method to percolate down in the heap.
+     * Internal method to sift down in the heap.
      *
-     * @param hole the index at which the percolate begins.
+     * @param hole the index at which the sift down begins.
      */
     private void siftDown(int hole) {
         int child;
         int tmpChild;
         AnyType tmp = array[hole];
 
-        for(; firstChildIndex(hole) <= size(); hole = tmpChild) {
+        for (; firstChildIndex(hole) <= size(); hole = tmpChild) {
             child = firstChildIndex(hole);
             tmpChild = child;
 
-            for(int i = 1; i < d; i++) {
-                if((child != size()) &&
+            for (int i = 1; i < d; i++) {
+                if ((child != size()) &&
                         (child + i < size() + 1) &&
                         (array[child + i].compareTo(array[tmpChild]) < 0)) {
                     tmpChild = child + i;
                 }
             }
-            if(array[tmpChild].compareTo(tmp) < 0) {
+            if (array[tmpChild].compareTo(tmp) < 0) {
                 array[hole] = array[tmpChild];
             } else {
                 break;
@@ -177,13 +181,18 @@ public class ALDAHeap<AnyType extends Comparable<? super AnyType>> {
         array[hole] = tmp;
     }
 
+    /**
+     * Internal method to bubble up in the heap.
+     *
+     * @param hole the index at which the bubble up begins.
+     */
     private void bubbleUp(int hole) {
         AnyType tmp = array[hole];
 
-        while(hole > 1) {
+        while (hole > 1) {
             int parIndex = parentIndex(hole);
             AnyType parent = array[parIndex];
-            if(tmp.compareTo(parent) >= 0) {
+            if (tmp.compareTo(parent) >= 0) {
                 break;
             }
             array[parIndex] = tmp;
